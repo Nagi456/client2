@@ -200,7 +200,11 @@ void TickAutoRq() {
         const uint32_t mode = MyClientGame::AutoRqMode();
         if (&*client != lastClient) { lastClient = &*client; rqGate.Reset(); }
         if (mode == 0) { rqGate.Reset(); return; }
-        const bool dead = !player->isAlive() || player->isSpectator();
+        // Actor::isSpectator is not exported by LeviLamina; resolve it like createPacket (absent -> alive check only).
+        using SpectatorFn = bool (*)(const Actor*);
+        static const auto isSpectator = reinterpret_cast<SpectatorFn>(
+            ll::memory::SymbolView{"?isSpectator@Actor@@QEBA_NXZ"}.resolve());
+        const bool dead = !player->isAlive() || (isSpectator && isSpectator(player));
         if (!rqGate.Update(true, dead, GetTickCount64())) return;
         if (Hive(*client).empty()) return;                      // Hive only
         auto packet = createPacket(MinecraftPacketIds::CommandRequest);
