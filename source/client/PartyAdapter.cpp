@@ -206,7 +206,8 @@ void TickAutoRq() {
         auto packet = createPacket(MinecraftPacketIds::CommandRequest);
         if (!packet || !client->getPacketSender().isInitialized()) return;
         auto& command = static_cast<CommandRequestPacket&>(*packet);
-        command.mCommand = MyClientAutoRq::Command(mode);
+        const std::string text = MyClientAutoRq::Command(mode);
+        command.mCommand = text;
         command.mOrigin->mType = CommandOriginType::Player;
         command.mOrigin->mUUID = mce::UUID::random();
         command.mOrigin->mRequestId = std::string{};
@@ -214,7 +215,7 @@ void TickAutoRq() {
         command.mVersion = CurrentCmdVersion::Latest;
         command.mInternalSource = false;
         client->getPacketSender().sendToServer(command);
-        ll::mod::NativeMod::current()->getLogger().info("Auto RQ: sent {}", command.mCommand);
+        ll::mod::NativeMod::current()->getLogger().info("Auto RQ: sent {}", text);
     } catch (...) {}
 }
 void TickParty() {
